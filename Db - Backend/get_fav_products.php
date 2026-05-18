@@ -1,0 +1,35 @@
+<?php
+require "db.php";
+header("Content-Type: application/json");
+
+$user_id = $_GET['user_id'] ?? null;
+if (!$user_id) {
+    echo json_encode([]);
+    exit;
+}
+
+$sql = "
+SELECT 
+    p.id,
+    p.name,
+    p.price,        
+    p.rating,
+    p.category,     
+    p.image
+FROM favorites f
+JOIN products p ON f.product_id = p.id
+WHERE f.user_id = ?
+";
+
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$favorites = [];
+while ($row = $result->fetch_assoc()) {
+    $favorites[] = $row;
+}
+
+echo json_encode($favorites);
